@@ -5,4 +5,4 @@ all:
 	@od a.bin -v -A none -w4 -t x1 > a.dump
 	@cut -c2-12 a.dump > obj_dir/a.hex
 	@cd obj_dir && make -f Vtop.mk
-	@rm a a.bin a.dump
+	@rm a.bin a.dump

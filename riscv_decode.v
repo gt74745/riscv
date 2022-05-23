@@ -3,13 +3,15 @@
 module riscv_decode (
 	input	[31:0] instr,
 
-	output	[31:0] u_imm,
-	output	[31:0] i_imm,
-	output	[31:0] s_imm,
-	output	[31:0] b_imm,
-	output	[31:0] j_imm,
+	output	[31:0] uimm,
+	output	[31:0] iimm,
+	output	[31:0] simm,
+	output	[31:0] bimm,
+	output	[31:0] jimm,
 
 	output	funct7,
+
+	output	[11:0] csr,
 
 	output	[4:0] rs2,
 	output	[4:0] rs1,
@@ -22,13 +24,15 @@ module riscv_decode (
 	output	is_legal
 );
 
-assign u_imm	= {instr[31], instr[30:12], 12'b0};
-assign i_imm	= {{21{instr[31]}}, instr[30:20]};
-assign s_imm	= {{21{instr[31]}}, instr[30:25], instr[11:7]};
-assign b_imm	= {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
-assign j_imm	= {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
+assign uimm	= {instr[31], instr[30:12], 12'b0};
+assign iimm	= {{21{instr[31]}}, instr[30:20]};
+assign simm	= {{21{instr[31]}}, instr[30:25], instr[11:7]};
+assign bimm	= {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
+assign jimm	= {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
 
 assign funct7	= instr[30];
+
+assign csr		= instr[31:20];
 
 assign rs2		= instr[24:20];
 assign rs1		= instr[19:15];

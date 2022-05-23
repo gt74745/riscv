@@ -1,10 +1,11 @@
 main:
-	
-	lui	sp,0x1
-	addi	sp,sp,-344
-	slli	sp,sp,4
-	lui	gp,0x1
-	slli	gp,gp,1
-	addi	gp,gp,-567
+
+	nop
+	li s0,0xff
+	li a0,0xff000000
+	csrw mcycle,s0
+	csrs mcycle,a0
+	csrci mcycle,0x5
+
 halt:
 	j halt
