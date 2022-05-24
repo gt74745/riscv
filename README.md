@@ -1,3 +1,3 @@
 # riscv
 
-RV32IZicsr cpu
+RV64IZicsr cpu
