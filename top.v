@@ -4,13 +4,13 @@ module top (
 	input reset
 );
 
-wire [31:0] addr;
-wire [31:0] rdata;
-wire [31:0] wdata;
-wire [3:0] wmask;
+wire [63:0] addr;
+wire [63:0] rdata;
+wire [63:0] wdata;
+wire [7:0] wmask;
 
-wire [31:0] i_addr;
-wire [63:0] i_data;
+wire [63:0] i_addr;
+wire [31:0] i_data;
 
 wire rdflag;
 
@@ -29,7 +29,7 @@ riscv core0 (
 	wmask,
 
 	i_addr,
-	i_data[63:32],
+	i_data,
 
 	rdflag,
 

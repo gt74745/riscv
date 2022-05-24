@@ -4,12 +4,12 @@ module riscv(
 	input	clk_i,
 	input	rst_i_b,
 
-	output	[31:0] d_addr_o,
-	input	[31:0] d_data_i,
-	output	[31:0] d_data_o,
-	output	[3:0] d_mask_o,
+	output	[63:0] d_addr_o,
+	input	[63:0] d_data_i,
+	output	[63:0] d_data_o,
+	output	[7:0] d_mask_o,
 
-	output	[31:0] i_addr_o,
+	output	[63:0] i_addr_o,
 	input	[31:0] i_data_i,
 
 	output	d_rdflag_o,
@@ -26,9 +26,9 @@ end
 /*    FETCH Stage    */
 /*===================*/
 
-reg [31:0] PC;
+reg [63:0] PC;
 
-wire [31:0] nextpc =	~rst_i_b ? 0 :
+wire [63:0] nextpc =	~rst_i_b ? 0 :
 						branch_taken ? PC + bimm :
 						opcode[27] ? PC + jimm :
 						opcode[25] ? INT[rs1] :
@@ -56,11 +56,11 @@ riscv_decode ID (
 	is_legal
 );
 
-wire [31:0] uimm;
-wire [31:0] iimm;
-wire [31:0] simm;
-wire [31:0] bimm;
-wire [31:0] jimm;
+wire [63:0] uimm;
+wire [63:0] iimm;
+wire [63:0] simm;
+wire [63:0] bimm;
+wire [63:0] jimm;
 
 wire funct7;
 
@@ -77,11 +77,11 @@ wire [31:0] opcode;
 
 wire is_legal;
 
-wire [31:0] csr_ =	funct3[2] ? INT[rs1] | CSR[csr[2:0]] :
-					funct3[3] ? ~INT[rs1] & CSR[csr[2:0]] :
-					funct3[5] ? {27'b0, i_data_i[19:15]} :
-					funct3[6] ? CSR[csr[2:0]] | {27'b0, i_data_i[19:15]} :
-					funct3[7] ? {CSR[csr[2:0]][31:5], CSR[csr[2:0]][4:0] & ~i_data_i[19:15]} :
+wire [63:0] csr_ =	funct3[2] ? INT[rs1] | CSR[csr] :
+					funct3[3] ? ~INT[rs1] & CSR[csr] :
+					funct3[5] ? {59'b0, i_data_i[19:15]} :
+					funct3[6] ? CSR[csr] | {59'b0, i_data_i[19:15]} :
+					funct3[7] ? {CSR[csr][63:5], CSR[csr][4:0] & ~i_data_i[19:15]} :
 					INT[rs1];
 
 /*=====================*/
@@ -104,8 +104,8 @@ riscv_alu EX (
 	branch_taken
 );
 
-wire [31:0] adder_result;
-wire [31:0] alu_result;
+wire [63:0] adder_result;
+wire [63:0] alu_result;
 wire branch_taken;
 
 /*=======================*/
@@ -115,7 +115,7 @@ wire branch_taken;
 riscv_memaccess MEM (
 	opcode[8],
 	opcode[0],
-	funct3[2:0],
+	funct3[3:0],
 	INT[rs2],
 	adder_result,
 
@@ -124,9 +124,9 @@ riscv_memaccess MEM (
 	dmem_addr
 );
 
-wire [31:0] st_data;
-wire [3:0] st_mask;
-wire [31:0] dmem_addr;
+wire [63:0] st_data;
+wire [7:0] st_mask;
+wire [63:0] dmem_addr;
 
 assign d_data_o = st_data;
 assign d_mask_o = opcode[8] ? st_mask : 0;
@@ -141,6 +141,7 @@ riscv_writeback WB (
 	opcode,
 	alu_result,
 	adder_result,
+	st_mask[7],
 	st_mask[3],
 	st_mask[1],
 	d_data_i,
@@ -148,18 +149,18 @@ riscv_writeback WB (
 	rd_
 );
 
-wire [31:0] rd_;
+wire [63:0] rd_;
 
-reg [31:0] INT [0:31];
-reg [31:0] CSR [0:7];
+reg [63:0] INT [0:31];
+reg [63:0] CSR [0:4095];
 
 always @(posedge clk_i) begin
 	if (rd != 0 & ~opcode[8] & ~branch_taken)
 		INT[rd] <= rd_;
 	if (rd != 0 & opcode[28])
-		INT[rd] <= CSR[csr[2:0]];
+		INT[rd] <= CSR[csr];
 	if (csr[11:10] != 2'b11 & opcode[28])
-		CSR[csr[2:0]] <= csr_;
+		CSR[csr] <= csr_;
 end
 
 endmodule

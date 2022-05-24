@@ -3,11 +3,11 @@
 module riscv_decode (
 	input	[31:0] instr,
 
-	output	[31:0] uimm,
-	output	[31:0] iimm,
-	output	[31:0] simm,
-	output	[31:0] bimm,
-	output	[31:0] jimm,
+	output	[63:0] uimm,
+	output	[63:0] iimm,
+	output	[63:0] simm,
+	output	[63:0] bimm,
+	output	[63:0] jimm,
 
 	output	funct7,
 
@@ -24,11 +24,11 @@ module riscv_decode (
 	output	is_legal
 );
 
-assign uimm	= {instr[31], instr[30:12], 12'b0};
-assign iimm	= {{21{instr[31]}}, instr[30:20]};
-assign simm	= {{21{instr[31]}}, instr[30:25], instr[11:7]};
-assign bimm	= {{20{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
-assign jimm	= {{12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
+assign uimm	= {{33{instr[31]}}, instr[30:12], 12'b0};
+assign iimm	= {{53{instr[31]}}, instr[30:20]};
+assign simm	= {{53{instr[31]}}, instr[30:25], instr[11:7]};
+assign bimm	= {{52{instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
+assign jimm	= {{44{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
 
 assign funct7	= instr[30];
 
