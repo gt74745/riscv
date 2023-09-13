@@ -1,0 +1,3 @@
+#!/bin/sh
+
+verilator --cc top.v --exe main.cpp --trace --report-unoptflat --timing
