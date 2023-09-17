@@ -4,7 +4,7 @@
 
 Extension Checklist (for rv32gc):
 
-[ ] rvi
+[x] rvi
 [ ] rvm
 [ ] rva
 [ ] rvf
@@ -12,6 +12,7 @@ Extension Checklist (for rv32gc):
 [ ] rvc
 [ ] User Mode
 [ ] Supervisor Mode
+[ ] Machine Mode
 
 Design Roadmap:
 
