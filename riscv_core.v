@@ -13,7 +13,15 @@
 module riscv_core
 (
 	input	wire		clk,
-	input	wire		rst
+	input	wire		rst,
+
+	output	wire	[31:0]	imem_addr,
+	input	wire	[31:0]	imem_data,
+
+	output	wire	[31:0]	dmem_addr,
+	output	wire	[1:0]	dmem_op,
+	input	wire	[31:0]	dmem_data_i,
+	output	wire	[31:0]	dmem_data_o
 );
 
 integer i;
@@ -41,10 +49,7 @@ wire	[31:0]	csru_in2;
 wire	[31:0]	alu;
 wire	[31:0]	agu;
 wire		bcu;
-wire	[31:0]	memrd;
 wire	[31:0]	ld;
-wire	[31:0]	sd;
-wire	[2:0]	smask;
 wire	[31:0]	wb;
 
 // Main operation registers
@@ -52,14 +57,8 @@ reg	[31:0]	pc;
 reg	[31:0]	instr;
 reg	[31:0]	irf	[0:31];
 
-// Memory
-reg	[7:0]	imem	[0:1023];
-reg	[7:0]	dmem	[0:1023];
-
 initial
 begin
-	$readmemh("imem.hex", imem);
-
 	pc = 0;
 	instr = 0;
 
@@ -75,6 +74,8 @@ assign nextpc =	rst ?					0 :
 		((`BRANCH & bcu) | `JAL | `JALR) ?	agu :
 							pc + 4;
 
+assign imem_addr = nextpc;
+
 always @(posedge clk, posedge rst)
 begin
 	if (rst)
@@ -84,10 +85,7 @@ begin
 	end else
 	begin
 		pc <= nextpc;
-		instr <= {	imem[nextpc[9:0] + 10'h3],
-				imem[nextpc[9:0] + 10'h2],
-				imem[nextpc[9:0] + 10'h1],
-				imem[nextpc[9:0] + 10'h0]};
+		instr <= imem_data;
 	end
 end
 
@@ -177,29 +175,24 @@ assign agu =	agu_in1 + agu_in2;
 
 // Memory access logic
 
-assign memrd =	(agu[31:10] == 1) ?	{dmem[agu[9:0] + 10'h3], dmem[agu[9:0] + 10'h2], dmem[agu[9:0] + 10'h1], dmem[agu[9:0] + 10'h0]} :
-					32'h0;
+assign dmem_addr = (`STORE | `LOAD) ?	agu :
+					32'b0;
 
-assign ld =	funct3[0] ?	{{24{memrd[7]}}, memrd[7:0]} :
-		funct3[1] ?	{{16{memrd[7]}}, memrd[15:0]} :
-		funct3[2] ?	memrd :
-		funct3[4] ?	{24'b0, memrd[7:0]} :
-		funct3[5] ?	{16'b0, memrd[15:0]} :
+assign dmem_op =	`STORE ? (	funct3[0] ?	2'b01 :
+					funct3[1] ?	2'b10 :
+					funct3[2] ?	2'b11 :
+							2'b00 ) :
+				2'b00;
+
+assign ld =	funct3[0] ?	{{24{dmem_data_i[7]}}, dmem_data_i[7:0]} :
+		funct3[1] ?	{{16{dmem_data_i[7]}}, dmem_data_i[15:0]} :
+		funct3[2] ?	dmem_data_i :
+		funct3[4] ?	{24'b0, dmem_data_i[7:0]} :
+		funct3[5] ?	{16'b0, dmem_data_i[15:0]} :
 				32'b0;
 
-assign smask =	funct3[0] ?	3'h1 :
-		funct3[1] ?	3'h3 :
-		funct3[2] ?	3'h7 :
-				3'h0;
-
-assign sd[31:16] =	smask[2] ?	alu_in2[31:16] :
-					16'b0;
-
-assign sd[15:8] =	smask[1] ?	alu_in2[15:8] :
-					8'b0;
-
-assign sd[7:0] =	smask[0] ?	alu_in2[7:0] :
-					8'b0;
+assign dmem_data_o = `STORE ?	alu_in2 :
+				32'b0;
 
 always @(posedge clk)
 begin
@@ -223,20 +216,6 @@ begin
 	begin
 		if (rd != 5'b0)
 			irf[rd] <= wb;
-
-		if (`STORE)
-		begin
-			if (agu[31:10] == 1)
-			begin
-				if (smask[2])
-				begin
-					dmem[agu[9:0] + 10'h3] <= sd[31:24];
-					dmem[agu[9:0] + 10'h2] <= sd[23:16];
-				end
-				if (smask[1]) dmem[agu[9:0] + 10'h1] <= sd[15:8];
-				if (smask[0]) dmem[agu[9:0] + 10'h0] <= sd[7:0];
-			end
-		end
 	end
 end
 endmodule
