@@ -32,7 +32,7 @@ wire	[1:0]	dmem_op;
 wire	[31:0]	dmem_read_data;
 wire	[31:0]	dmem_write_data;
 
-riscv_core core
+riscv_hart hart0
 (
 	.clk(clk),
 	.rst(rst),

@@ -10,7 +10,7 @@
 `define FENCE opcode[15]
 `define SYSTEM opcode[28]
 
-module riscv_core
+module riscv_hart
 (
 	input	wire		clk,
 	input	wire		rst,
