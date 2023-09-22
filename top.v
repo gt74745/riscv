@@ -6,13 +6,20 @@ reg	rtc_clk;
 reg	rtc_dly;
 wire	rtc;
 
+wire		imem_addr_valid;
 wire	[31:0]	imem_addr;
+wire		imem_data_ready;
 wire	[31:0]	imem_data;
 
 wire	[31:0]	addr;
 wire	[2:0]	mem_op;
 wire	[31:0]	read_data;
 wire	[31:0]	write_data;
+
+wire		ext_mem_addr_valid;
+wire	[31:0]	ext_mem_addr;
+wire		ext_mem_data_ready;
+wire	[511:0]	ext_mem_data;
 
 wire		timer_irq;
 
@@ -43,7 +50,9 @@ riscv_hart hart0
 	.clk(clock),
 	.rst(reset),
 
+	.imem_addr_valid(imem_addr_valid),
 	.imem_addr(imem_addr),
+	.imem_data_ready(imem_data_ready),
 	.imem_data(imem_data),
 
 	.addr(addr),
@@ -55,23 +64,30 @@ riscv_hart hart0
 	.timer_irq(timer_irq)
 );
 
-dualport_ram mem
+cache imem
 (
 	.clk(clock),
 
-	// Port A (instruction)
-	.addr_a(imem_addr[14:0]),
-	.chip_select_a(imem_addr[31:15] == 0),
-	.op_a(0),
-	.data_a_i(0),
-	.data_a_o(imem_data),
+	.cpu_addr_valid(imem_addr_valid),
+	.cpu_addr(imem_addr),
+	.cpu_data_ready(imem_data_ready),
+	.cpu_data_o(imem_data),
 
-	// Port B (data)
-	.addr_b(addr[14:0]),
-	.chip_select_b(addr[31:15] == 0),
-	.op_b({2{mem_op[2]}} & mem_op[1:0]),
-	.data_b_i(write_data),
-	.data_b_o(read_data)
+	.mem_addr_valid(ext_mem_addr_valid),
+	.mem_addr(ext_mem_addr),
+	.mem_data_ready(ext_mem_data_ready),
+	.mem_data_i(ext_mem_data)
+);
+
+rom flash
+(
+	.chip_select(addr[31:15] == 0),
+
+	.addr_valid(ext_mem_addr_valid),
+	.addr(ext_mem_addr[14:0]),
+
+	.data_ready(ext_mem_data_ready),
+	.data(ext_mem_data)
 );
 
 timer rtctime

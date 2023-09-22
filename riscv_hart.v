@@ -3,7 +3,9 @@ module riscv_hart
 	input	wire		clk,
 	input	wire		rst,
 
+	output	wire		imem_addr_valid,
 	output	wire	[31:0]	imem_addr,
+	input	wire		imem_data_ready,
 	input	wire	[31:0]	imem_data,
 
 	output	wire	[31:0]	addr,
@@ -70,6 +72,7 @@ riscv_control control
 
 	// Memory access monitoring port
 	.pc(pc),
+	.imem_data_ready(imem_data_ready),
 	.mem_op(mem_op),
 	.addr(addr),
 
@@ -93,13 +96,14 @@ riscv_control control
 
 // Fetch logic
 
-assign nextpc =	rst ?			0 :
-		trap ?			trap_target :
-		wfi ?			pc :
-		mret ?			mret_target :
-		jump ?			jump_target :
-					pc + 4;
+assign nextpc =	rst ?				0 :
+		trap ?				trap_target :
+		wfi ?				pc :
+		mret ?				mret_target :
+		jump ?				jump_target :
+						pc + 4;
 
+assign imem_addr_valid = 1;
 assign imem_addr = nextpc;
 
 always @(posedge clk, posedge rst)
@@ -108,7 +112,7 @@ begin
 	begin
 		pc <= -4;
 		instr <= 32'h13;
-	end else
+	end else if (imem_data_ready)
 	begin
 		pc <= nextpc;
 		instr <= imem_data;
@@ -168,10 +172,9 @@ begin
 		begin
 			irf[i] <= 32'b0;
 		end
-	end else
+	end else if ((rd != 5'b0) & imem_data_ready)
 	begin
-		if (rd != 5'b0)
-			irf[rd] <= irf_wb;
+		irf[rd] <= irf_wb;
 	end
 end
 
