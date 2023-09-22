@@ -55,10 +55,13 @@ riscv_hart hart0
 	.imem_data_ready(imem_data_ready),
 	.imem_data(imem_data),
 
-	.addr(addr),
 	.mem_op(mem_op),
-	.data_i(read_data),
-	.data_o(write_data),
+	.dmem_addr_valid(dmem_addr_valid),
+	.dmem_addr(dmem_addr),
+	.dmem_read_data_ready(dmem_read_data_ready),
+	.dmem_read_data(dmem_read_data),
+	.dmem_write_data_valid(dmem_write_data_valid),
+	.data_write_data(dmem_write_data),
 
 	.hardware_irq(0),
 	.timer_irq(timer_irq)
@@ -72,6 +75,21 @@ cache imem
 	.cpu_addr(imem_addr),
 	.cpu_data_ready(imem_data_ready),
 	.cpu_data_o(imem_data),
+
+	.mem_addr_valid(ext_mem_addr_valid),
+	.mem_addr(ext_mem_addr),
+	.mem_data_ready(ext_mem_data_ready),
+	.mem_data_i(ext_mem_data)
+);
+
+cache dmem
+(
+	.clk(clock),
+
+	.cpu_addr_valid(dmem_addr_valid),
+	.cpu_addr(dmem_addr),
+	.cpu_data_ready(dmem_data_ready),
+	.cpu_data_o(dmem_data),
 
 	.mem_addr_valid(ext_mem_addr_valid),
 	.mem_addr(ext_mem_addr),
