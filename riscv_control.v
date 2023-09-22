@@ -186,6 +186,7 @@ begin
 	end else
 	begin
 		// Interrupt queue handling
+
 		if (mip[11] & interrupt_trap & (interrupt_cause == 11))
 		begin
 			mip[11] <= 0;
@@ -207,7 +208,9 @@ begin
 			mip <= csr_wb;
 		end
 
-		// Traps
+
+		// Trap Handling
+
 		if (exception_trap)
 		begin
 			mcause <= {28'b0, exception_cause};		// Forward exception type to mcause
@@ -240,7 +243,9 @@ begin
 			mepc <= csr_wb;
 		end
 
+
 		// Cycle counter
+
 		if (csr_[12'hb00])
 		begin
 			mcycle[31:0] <= csr_wb;
@@ -249,12 +254,14 @@ begin
 		begin
 			mcycle[63:32] <= csr_wb;
 		end
-		else
+		else if (~mcountinhibit[0])
 		begin
 			mcycle <= mcycle + 64'b1;
 		end
 
+
 		// Instruction retire counter
+
 		if (csr_[12'hb02])
 		begin
 			minstret[31:0] <= csr_wb;
@@ -263,12 +270,38 @@ begin
 		begin
 			minstret[63:32] <= csr_wb;
 		end
-		else
+		else if (~mcountinhibit[2])
 		begin
 			minstret <= minstret + {63'b0, ~(exception_trap | interrupt_trap | wfi)};
 		end
 
+
+		// Configurable performance counters
+		
+		for (i = 3; i < 32; i++)
+		begin
+			if (csr_[{7'hb0, i[4:0]}])
+			begin
+				mhpmcounter[i][31:0] <= csr_wb;
+			end
+			else if (csr_[{7'hb8, i[4:0]}])
+			begin
+				mhpmcounter[i][63:32] <= csr_wb;
+			end
+			else if (~mcountinhibit[i])
+			begin
+				case (mhpmevent[i])
+					1: mhpmcounter[i] <= mhpmcounter[i] + {63'b0, exception_trap};
+					2: mhpmcounter[i] <= mhpmcounter[i] + {63'b0, interrupt_trap};
+					3: mhpmcounter[i] <= mhpmcounter[i] + {63'b0, breakpoint};
+					4: mhpmcounter[i] <= mhpmcounter[i] + {63'b0, ecall};
+					default:;
+				endcase
+			end
+		end
+
 		// Misc. CSR writeback
+
 		case (csr)
 			12'h304:	mie <= csr_wb;
 			12'h305:	mtvec <= csr_wb;
