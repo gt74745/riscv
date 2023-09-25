@@ -168,10 +168,13 @@ timer rtctime
 	.clk(clock),
 	.rtc(rtc),
 
-	.chip_select(dmem_addr[31:4] == 28'hf00),
+	.chip_select(dmem_addr[31:4] == 28'hc00),
+	.addr_valid(dmem_addr_valid),
 	.addr(dmem_addr[3:0]),
 	.op(dmem_op[2]),
+	.data_valid(dmem_write_data_valid),
 	.data_i(dmem_write_data),
+	.data_ready(dmem_read_data_ready),
 	.data_o(dmem_read_data),
 
 	.interrupt(timer_irq)
