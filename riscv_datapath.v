@@ -42,6 +42,8 @@ module riscv_datapath
 	output	wire	[31:0]	jump_target,
 
 	// Memaccess port
+	output	wire		is_mem_op,
+	output	wire		is_store,
 	output	wire	[2:0]	mem_op,
 	output	wire	[31:0]	mem_addr,
 	input	wire	[31:0]	mem_load_data,
@@ -191,6 +193,9 @@ assign mret =		`SYSTEM & funct3[0] & csr_[12'h302];
 assign wfi =		`SYSTEM & funct3[0] & csr_[12'h105];
 
 // Memory access logic
+
+assign is_mem_op = (`STORE | `LOAD);
+assign is_store = `STORE;
 
 assign mem_addr = (`STORE | `LOAD) ?	agu :
 					32'b0;

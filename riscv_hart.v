@@ -8,10 +8,13 @@ module riscv_hart
 	input	wire		imem_data_ready,
 	input	wire	[31:0]	imem_data,
 
-	output	wire	[31:0]	addr,
-	output	wire	[2:0]	mem_op,
-	input	wire	[31:0]	data_i,
-	output	wire	[31:0]	data_o,
+	output	wire	[2:0]	dmem_op,
+	output	wire		dmem_addr_valid,
+	output	wire	[31:0]	dmem_addr,
+	input	wire		dmem_read_data_ready,
+	input	wire	[31:0]	dmem_read_data,
+	output	wire		dmem_write_data_valid,
+	output	wire	[31:0]	dmem_write_data,
 
 	input	wire		hardware_irq,
 	input	wire		timer_irq
@@ -50,8 +53,8 @@ reg	[31:0]	irf	[0:31];
 
 initial
 begin
-	pc = 0;
-	instr = 0;
+	pc = -4;
+	instr = 32'h13;
 
 	for (i = 0; i < 32; i++)
 	begin
@@ -73,8 +76,8 @@ riscv_control control
 	// Memory access monitoring port
 	.pc(pc),
 	.imem_data_ready(imem_data_ready),
-	.mem_op(mem_op),
-	.addr(addr),
+	.dmem_op(dmem_op),
+	.addr(dmem_addr),
 
 	// Inline event port
 	.illegal_instruction(illegal_instruction),
@@ -112,7 +115,7 @@ begin
 	begin
 		pc <= -4;
 		instr <= 32'h13;
-	end else if (imem_data_ready)
+	end else if (imem_data_ready & (dmem_addr_valid ? dmem_read_data_ready : 1))
 	begin
 		pc <= nextpc;
 		instr <= imem_data;
@@ -152,10 +155,12 @@ riscv_datapath datapath
 	.jump_target(jump_target),
 
 	// memory access port 
-	.mem_op(mem_op),
-	.mem_addr(addr),
-	.mem_load_data(data_i),
-	.mem_store_data(data_o),
+	.is_mem_op(dmem_addr_valid),
+	.is_store(dmem_write_data_valid),
+	.mem_op(dmem_op),
+	.mem_addr(dmem_addr),
+	.mem_load_data(dmem_read_data),
+	.mem_store_data(dmem_write_data),
 
 	// irf writeback port 
 	.rd(rd),

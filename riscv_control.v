@@ -12,7 +12,7 @@ module riscv_control
 	// Memory access port
 	input	wire	[31:0]	pc,
 	input	wire		imem_data_ready,
-	input	wire	[2:0]	mem_op,
+	input	wire	[2:0]	dmem_op,
 	input	wire	[31:0]	addr,
 
 	// Inline event port
@@ -88,15 +88,15 @@ assign instr_address_misaligned = (pc[1] | pc[0]);
 
 assign instr_access_fault = (pc[31:15] != 0);
 
-assign load_address_misaligned = ~mem_op[2] & (	((mem_op[1:0] == 2) & addr[0]) |
-						((mem_op[1:0] == 3) & (addr[1] | addr[0])));
+assign load_address_misaligned = ~dmem_op[2] & (	((dmem_op[1:0] == 2) & addr[0]) |
+						((dmem_op[1:0] == 3) & (addr[1] | addr[0])));
 
-assign load_access_fault = ~mem_op[2] & (addr > 32'h800c);
+assign load_access_fault = ~dmem_op[2] & (addr > 32'h800c);
 
-assign store_address_misaligned = mem_op[2] & (	((mem_op[1:0] == 2) & addr[0]) |
-						((mem_op[1:0] == 3) & (addr[1] | addr[0])));
+assign store_address_misaligned = dmem_op[2] & (	((dmem_op[1:0] == 2) & addr[0]) |
+						((dmem_op[1:0] == 3) & (addr[1] | addr[0])));
 
-assign store_access_fault = mem_op[2] & (addr > 32'h800c);
+assign store_access_fault = dmem_op[2] & (addr > 32'h800c);
 
 // Exception trap logic
 
