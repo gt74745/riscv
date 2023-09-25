@@ -94,16 +94,16 @@ icache imem
 	.cpu_addr(imem_addr),
 
 	// CPU data port
-	.cpu_data_ready(imem_data_ready),
-	.cpu_data_o(imem_data),
+	.cpu_read_data_ready(imem_data_ready),
+	.cpu_read_data(imem_data),
 
 	// External address port
 	.mem_addr_valid(imem_ext_addr_valid),
 	.mem_addr(imem_ext_addr),
 
 	// External data port
-	.mem_data_ready(ext_read_data_ready),
-	.mem_data_i(ext_read_data)
+	.mem_read_data_ready(ext_read_data_ready),
+	.mem_read_data(ext_read_data)
 );
 
 dcache dmem
@@ -115,24 +115,24 @@ dcache dmem
 	.cpu_addr(dmem_addr),
 
 	// CPU data write port
-	.cpu_data_valid(dmem_write_data_valid),
-	.cpu_data_i(dmem_write_data),
+	.cpu_write_data_valid(dmem_write_data_valid),
+	.cpu_write_data(dmem_write_data),
 
 	// CPU data read port
-	.cpu_data_ready(dmem_read_data_ready),
-	.cpu_data_o(dmem_read_data),
+	.cpu_read_data_ready(dmem_read_data_ready),
+	.cpu_read_data(dmem_read_data),
 
 	// External address port
 	.mem_addr_valid(dmem_ext_addr_valid),
 	.mem_addr(dmem_ext_addr),
 
 	// External data write port
-	.mem_data_valid(ext_write_data_valid),
-	.mem_data_o(ext_write_data),
+	.mem_write_data_valid(ext_write_data_valid),
+	.mem_write_data(ext_write_data),
 
 	// External data read port
-	.mem_data_ready(ext_read_data_ready),
-	.mem_data_i(ext_read_data)
+	.mem_read_data_ready(ext_read_data_ready),
+	.mem_read_data(ext_read_data)
 );
 
 rom flash
