@@ -11,7 +11,8 @@ module riscv_control
 
 	// Memory access port
 	input	wire	[31:0]	pc,
-	input	wire	[2:0]	mem_op,
+	input	wire		imem_data_ready,
+	input	wire	[2:0]	dmem_op,
 	input	wire	[31:0]	addr,
 
 	// Inline event port
@@ -85,17 +86,17 @@ end
 
 assign instr_address_misaligned = (pc[1] | pc[0]);
 
-assign instr_access_fault = 0;
+assign instr_access_fault = (pc[31:15] != 0);
 
-assign load_address_misaligned = ~mem_op[2] & (	((mem_op[1:0] == 2) & addr[0]) |
-						((mem_op[1:0] == 3) & (addr[1] | addr[0])));
+assign load_address_misaligned = ~dmem_op[2] & (	((dmem_op[1:0] == 2) & addr[0]) |
+						((dmem_op[1:0] == 3) & (addr[1] | addr[0])));
 
-assign load_access_fault = 0;
+assign load_access_fault = ~dmem_op[2] & (addr > 32'hc00c);
 
-assign store_address_misaligned = mem_op[2] & (	((mem_op[1:0] == 2) & addr[0]) |
-						((mem_op[1:0] == 3) & (addr[1] | addr[0])));
+assign store_address_misaligned = dmem_op[2] & (	((dmem_op[1:0] == 2) & addr[0]) |
+						((dmem_op[1:0] == 3) & (addr[1] | addr[0])));
 
-assign store_access_fault = 0;
+assign store_access_fault = dmem_op[2] & ((addr < 32'h8004) | (addr > 32'hc00c));
 
 // Exception trap logic
 
@@ -183,7 +184,7 @@ begin
 		mscratch <= 0;
 		mepc <= 0;
 		mcause <= 0;
-	end else
+	end else if (imem_data_ready)
 	begin
 		// Interrupt queue handling
 
