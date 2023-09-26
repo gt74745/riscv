@@ -44,7 +44,8 @@ wire	[31:0]	irf_wb;
 
 // Main operation registers
 
-reg	[31:0]	pc;
+reg	[31:0]	pc;	// Datapath PC
+reg	[31:0]	pc_;	// Control PC
 reg	[31:0]	instr;
 reg	[31:0]	irf	[0:31];
 
@@ -54,6 +55,7 @@ reg	[31:0]	irf	[0:31];
 initial
 begin
 	pc = -4;
+	pc_ = -4;
 	instr = 32'h13;
 
 	for (i = 0; i < 32; i++)
@@ -75,6 +77,7 @@ riscv_control control
 
 	// Memory access monitoring port
 	.pc(pc),
+	.pc_(pc_),
 	.imem_data_ready(icache_data_ready),
 	.dmem_op(dcache_mem_op),
 	.addr(dcache_addr),
@@ -114,12 +117,17 @@ begin
 	if (rst)
 	begin
 		pc <= -4;
+		pc_ <= -4;
 		instr <= 32'h13;
-	end else if (icache_data_ready & (dcache_addr_valid ? dcache_read_data_ready : 1))
+	end
+	else if (icache_data_ready & (dcache_addr_valid ? dcache_read_data_ready : 1))
 	begin
 		pc <= nextpc;
+		pc_ <= nextpc;
 		instr <= icache_data;
 	end
+	else
+		pc_ <= nextpc;
 end
 
 
