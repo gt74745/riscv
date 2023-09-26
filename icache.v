@@ -3,6 +3,7 @@ module icache
 	input	wire		clk,
 
 	input	wire		cpu_addr_valid,
+	input	wire		cpu_addr_cacheable,
 	input	wire	[31:0]	cpu_addr,
 
 	output	wire		cpu_read_data_ready,
@@ -19,10 +20,10 @@ reg	[31:0]	x	[0:63][0:15];
 reg	[63:0]	valid;
 reg	[19:0]	tag	[0:63];
 
-assign cpu_read_data_ready =	cpu_addr_valid & valid[cpu_addr[11:6]] & (cpu_addr[31:12] == tag[cpu_addr[11:6]]);
-assign cpu_read_data =	x[cpu_addr[11:6]][cpu_addr[5:2]];
+assign cpu_read_data_ready =	cpu_addr_cacheable & cpu_addr_valid & valid[cpu_addr[11:6]] & (cpu_addr[31:12] == tag[cpu_addr[11:6]]);
+assign cpu_read_data =		x[cpu_addr[11:6]][cpu_addr[5:2]];
 
-assign mem_addr_valid =	cpu_addr_valid ? ~cpu_read_data_ready : 1'bz;
+assign mem_addr_valid =	(cpu_addr_valid & cpu_addr_cacheable) ? ~cpu_read_data_ready : 1'bz;
 assign mem_addr =	mem_addr_valid ? cpu_addr : 32'bz;
 
 always @(posedge clk)
