@@ -43,10 +43,10 @@ module dcache
 *
 *	Cycle:		   n+1		   n+2		   n+3	
 *
-*	Read hit:	cache>cpu	
-*	Read miss:	mem>cache	cache>cpu
-*	Write hit:	cpu>cache	cache>mem
-*	Write miss:	mem>cache	cpu>cache	cache>mem
+*	Read hit:	cache->cpu	
+*	Read miss:	mem->cache	cache->cpu
+*	Write hit:	cpu->cache	cache->mem
+*	Write miss:	mem->cache	cpu->cache	cache->mem
 */
 
 wire	[4:0]	write_upper_bound;

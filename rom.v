@@ -5,8 +5,8 @@ module rom
 	input	wire		addr_valid,
 	input	wire	[14:0]	addr,
 
-	output	wire		data_ready,
-	output	wire	[511:0]	data
+	output	reg		data_ready,
+	output	reg	[511:0]	data
 );
 
 integer i;

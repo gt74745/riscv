@@ -1,6 +1,7 @@
 module top ();
 
 reg	clock;
+reg	mem_clock;
 reg	reset;
 reg	rtc_clk;
 reg	rtc_dly;
@@ -8,6 +9,7 @@ reg	rtc_dly;
 initial
 begin
 	clock = 0;
+	mem_clock = 0;
 	reset = 0;
 
 	$dumpfile("wave.vcd");
@@ -16,6 +18,9 @@ end
 
 always #10
 	clock <= !clock;
+
+always #100
+	mem_clock <= !mem_clock;
 
 always #320
 	rtc_clk <= !rtc_clk;

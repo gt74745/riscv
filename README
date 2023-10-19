@@ -30,6 +30,7 @@ Memory Layout:
 0x8000-0xbfff:	Random access memory		(rwxc)
 0xc000-0xc00c:	Timer (mtime and mtimecmp)	(rw  )
 
+
 Cache:
 
 Instruction and data cache are both 4 KiB direct-mapped caches with 64 byte lines. Read hits are carried out immediately, with misses creating 1 cycle of latency.
