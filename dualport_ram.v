@@ -19,11 +19,11 @@ integer i;
 
 reg [7:0] x [0:8191][0:3];
 
-assign data_a_o = (chip_select_a & (op_a == 0)) ? 	{x[addr_a[14:2]][3], x[addr_a[14:2]][2], x[addr_a[14:2]][1], x[addr_a[14:2]][0]} :
-							32'b0;
+assign data_a_o = (chip_select_a & (op_a == 0)) ? 	{x[addr_a[14:2]][addr_a[1:0] + 2'h3], x[addr_a[14:2]][addr_a[1:0] + 2'h2], x[addr_a[14:2]][addr_a[1:0] + 2'h1], x[addr_a[14:2]][addr_a[1:0] + 2'h0]} :
+							32'bz;
 
-assign data_b_o = (chip_select_b & (op_b == 0)) ?	{x[addr_b[14:2]][3], x[addr_b[14:2]][2], x[addr_b[14:2]][1], x[addr_b[14:2]][0]} :
-							32'b0;
+assign data_b_o = (chip_select_b & (op_b == 0)) ?	{x[addr_b[14:2]][addr_b[1:0] + 2'h3], x[addr_b[14:2]][addr_b[1:0] + 2'h2], x[addr_b[14:2]][addr_b[1:0] + 2'h1], x[addr_b[14:2]][addr_b[1:0] + 2'h0]} :
+							32'bz;
 
 initial
 begin

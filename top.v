@@ -1,68 +1,91 @@
-module top
-(
-	output	reg		done
-);
+module top ();
 
-reg clk;
-reg rst;
+reg	clock;
+reg	mem_clock;
+reg	reset;
+reg	rtc_clk;
+reg	rtc_dly;
 
 initial
 begin
+	clock = 0;
+	mem_clock = 0;
+	reset = 0;
+
 	$dumpfile("wave.vcd");
 	$dumpvars(0, top);
-
-	clk = 0;
-	rst = 0;
-	done = 0;
-
-	#3 rst = 1;
-	#46 rst = 0;
-	#4000 done = 1;
 end
 
 always #10
+	clock <= !clock;
+
+always #100
+	mem_clock <= !mem_clock;
+
+always #320
+	rtc_clk <= !rtc_clk;
+
+always @(posedge clock)
 begin
-	clk <= ~clk;
+	rtc_dly <= rtc_clk;
 end
 
-wire	[31:0]	imem_addr;
-wire	[31:0]	imem_data;
-wire	[31:0]	dmem_addr;
-wire	[1:0]	dmem_op;
-wire	[31:0]	dmem_read_data;
-wire	[31:0]	dmem_write_data;
+wire		rtc;
+wire		addr_valid;
+wire	[31:0]	addr;
+wire		write_data_valid;
+wire	[511:0]	write_data;
+wire		read_data_ready;
+wire	[511:0]	read_data;
 
-riscv_hart hart0
+assign rtc = rtc_clk ^ rtc_dly;
+
+riscv_core core0
 (
-	.clk(clk),
-	.rst(rst),
+	.clk(clock),
+	.rst(reset),
 
-	.imem_addr(imem_addr),
-	.imem_data(imem_data),
+	.ext_addr_valid(addr_valid),
+	.ext_addr(addr),
 
-	.dmem_addr(dmem_addr),
-	.dmem_op(dmem_op),
-	.dmem_data_i(dmem_read_data),
-	.dmem_data_o(dmem_write_data)
+	.ext_write_data_valid(write_data_valid),
+	.ext_write_data(write_data),
+
+	.ext_read_data_ready(read_data_ready),
+	.ext_read_data(read_data),
+
+	.ext_timer_tick(rtc),
+
+	.ext_irq(0)
 );
 
-dualport_ram mem
+rom flash
 (
-	.clk(clk),
+	.chip_select(addr[31:15] == 0),
 
-	// Port A (instruction)
-	.addr_a(imem_addr[14:0]),
-	.chip_select_a(imem_addr[31:15] == 0),
-	.op_a(0),
-	.data_a_i(0),
-	.data_a_o(imem_data),
+	.addr_valid(addr_valid),
+	.addr(addr[14:0]),
 
-	// Port B (data)
-	.addr_b(dmem_addr[14:0]),
-	.chip_select_b(dmem_addr[31:15] == 0),
-	.op_b(dmem_op),
-	.data_b_i(dmem_write_data),
-	.data_b_o(dmem_read_data)
+	.data_ready(read_data_ready),
+	.data(read_data)
 );
+
+ram ram
+(
+	.clk(clock),
+
+	.chip_select(addr[31:14] == 2),
+	.write_enable(write_data_valid),
+
+	.addr_valid(addr_valid),
+	.addr(addr[13:0]),
+
+	.data_valid(write_data_valid),
+	.data_i(write_data),
+
+	.data_ready(read_data_ready),
+	.data_o(read_data)
+);
+
 
 endmodule
