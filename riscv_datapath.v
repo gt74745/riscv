@@ -10,19 +10,28 @@
 `define FENCE opcode[15]
 `define SYSTEM opcode[28]
 
+`define AMO opcode[11]
+`define FLW opcode[1]
+`define FSW opcode[9]
+`define FMADD opcode[16]
+`define FMSUB opcode[17]
+`define FNMSUB opcode[18]
+`define FNMADD opcode[19]
+`define FPU opcode[20]
+
 module riscv_datapath
 (
-	input	wire		clk,
-
 	// PC and instr input
 	input	wire	[31:0]	pc,
 	input	wire	[31:0]	instr,
 
 	// Exception detection port
 	output	wire		illegal_instruction,
+	output 	wire 		ucoded_instruction,
 	output	wire		breakpoint,
 	output	wire		ecall,
 	output	wire		mret,
+	output 	wire 		xret,
 	output	wire		wfi,
 
 	// Register read port
@@ -33,7 +42,7 @@ module riscv_datapath
 
 	// CSR read-write port
 	output	wire	[11:0]	csr,
-	output	wire	[4095:0]	csr_,
+	output	wire	[4095:0]	csr_mask,
 	input	wire	[31:0]	csr_value,
 	output	wire	[31:0]	csr_wb,
 
@@ -118,8 +127,8 @@ assign imm[0] =		is_i ?	instr[20] :
 // Decode logic
 
 assign funct3 = 8'b1 << ((is_u | is_j | `JALR) ? 0 : instr[14:12]);
-assign funct7 = 128'b1 << (is_r ? instr[31:26] : 0);
-assign csr_ = 4096'b1 << (`SYSTEM ? instr[31:20] : 0);
+assign funct7 = 128'b1 << (is_r ? instr[31:25] : 0);
+assign csr_mask = 4096'b1 << (`SYSTEM ? instr[31:20] : 0);
 
 assign alu_in1 =	(`BRANCH | `ALUI | `ALUR) ?	rs1_value :
 			(`JAL | `JALR | `AUIPC) ?	pc :
@@ -184,12 +193,18 @@ assign jump_target =	jump ?	agu :
 assign illegal_instruction =	~(instr[1] & instr[0]) |
 				~(	`LUI | `AUIPC | `JAL | `JALR |
 					`BRANCH | `LOAD | `STORE | `ALUI |
-					`ALUR | `FENCE | `SYSTEM );
+					(`ALUR && ~funct7[1]) | `FENCE | `SYSTEM );
 
-assign breakpoint =	`SYSTEM & funct3[0] & csr_[12'h1];
-assign ecall =		`SYSTEM & funct3[0] & csr_[12'h0];
-assign mret =		`SYSTEM & funct3[0] & csr_[12'h302];
-assign wfi =		`SYSTEM & funct3[0] & csr_[12'h105];
+assign ucoded_instruction =	(instr[1] & instr[0]) &
+				(	(`ALUR && funct7[1]) | `AMO | `FLW | `FSW |
+					`FMADD | `FMSUB | `FNMSUB | `FNMADD |
+					`FPU );
+
+assign breakpoint =	`SYSTEM & funct3[0] & csr_mask[12'h1];
+assign ecall =		`SYSTEM & funct3[0] & csr_mask[12'h0];
+assign mret =		`SYSTEM & funct3[0] & csr_mask[12'h302];
+assign xret =		`SYSTEM & funct3[0] & csr_mask[12'h303];
+assign wfi =		`SYSTEM & funct3[0] & csr_mask[12'h105];
 
 // Memory access logic
 
@@ -200,7 +215,8 @@ assign mem_addr = (`STORE | `LOAD) ?	agu :
 
 assign mem_op[2] =	`STORE;
 
-assign mem_op[1:0] =	(funct3[0] | funct3[4]) ?	2'b01 :
+assign mem_op[1:0] =	~(`STORE | `LOAD) ? 		2'b00 :
+			(funct3[0] | funct3[4]) ?	2'b01 :
 			(funct3[1] | funct3[5]) ?	2'b10 :
 			funct3[2] ?			2'b11 :
 							2'b00;

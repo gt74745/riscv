@@ -1,7 +1,6 @@
 module top ();
 
 reg	clock;
-reg	mem_clock;
 reg	reset;
 reg	rtc_clk;
 reg	rtc_dly;
@@ -9,26 +8,31 @@ reg	rtc_dly;
 initial
 begin
 	clock = 0;
-	mem_clock = 0;
 	reset = 0;
 
 	$dumpfile("wave.vcd");
 	$dumpvars(0, top);
+
+	$readmemh("prog.hex", core0.mainmem.x);
+	$readmemh("ucode.hex", core0.brom.x);
 end
 
 always #10
 	clock <= !clock;
 
-always #100
-	mem_clock <= !mem_clock;
-
-always #320
+always #10
 	rtc_clk <= !rtc_clk;
+
+initial begin
+	reset = 1;
+	#3200 reset = 0;
+end
 
 always @(posedge clock)
 begin
 	rtc_dly <= rtc_clk;
 end
+
 
 wire		rtc;
 wire		addr_valid;
@@ -40,22 +44,12 @@ wire	[511:0]	read_data;
 
 assign rtc = rtc_clk ^ rtc_dly;
 
-riscv_core core0
+riscv_soc core0
 (
 	.clk(clock),
 	.rst(reset),
 
-	.ext_addr_valid(addr_valid),
-	.ext_addr(addr),
-
-	.ext_write_data_valid(write_data_valid),
-	.ext_write_data(write_data),
-
-	.ext_read_data_ready(read_data_ready),
-	.ext_read_data(read_data),
-
-	.ext_timer_tick(rtc),
-
+	.rtc_tick(rtc_clk),
 	.ext_irq(0)
 );
 
@@ -86,6 +80,5 @@ ram ram
 	.data_ready(read_data_ready),
 	.data_o(read_data)
 );
-
 
 endmodule

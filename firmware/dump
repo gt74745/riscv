@@ -1,0 +1,77 @@
+
+image.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <reset>:
+   0:	0000106f          	j	1000 <ucode_exit+0xf7c>
+
+00000004 <ucode_vector>:
+   4:	bc011173          	csrrw	sp,0xbc0,sp
+   8:	f8010113          	add	sp,sp,-128
+   c:	00112023          	sw	ra,0(sp)
+  10:	00312223          	sw	gp,4(sp)
+  14:	00412423          	sw	tp,8(sp)
+  18:	00512623          	sw	t0,12(sp)
+  1c:	00612823          	sw	t1,16(sp)
+  20:	00712a23          	sw	t2,20(sp)
+  24:	00812c23          	sw	s0,24(sp)
+  28:	00912e23          	sw	s1,28(sp)
+  2c:	02a12023          	sw	a0,32(sp)
+  30:	02b12223          	sw	a1,36(sp)
+  34:	02c12423          	sw	a2,40(sp)
+  38:	02d12623          	sw	a3,44(sp)
+  3c:	02e12823          	sw	a4,48(sp)
+  40:	02f12a23          	sw	a5,52(sp)
+  44:	03012c23          	sw	a6,56(sp)
+  48:	03112e23          	sw	a7,60(sp)
+  4c:	05212023          	sw	s2,64(sp)
+  50:	05312223          	sw	s3,68(sp)
+  54:	05412423          	sw	s4,72(sp)
+  58:	05512623          	sw	s5,76(sp)
+  5c:	05612823          	sw	s6,80(sp)
+  60:	05712a23          	sw	s7,84(sp)
+  64:	05812c23          	sw	s8,88(sp)
+  68:	05912e23          	sw	s9,92(sp)
+  6c:	07a12023          	sw	s10,96(sp)
+  70:	07b12223          	sw	s11,100(sp)
+  74:	07c12423          	sw	t3,104(sp)
+  78:	07d12623          	sw	t4,108(sp)
+  7c:	07e12823          	sw	t5,112(sp)
+  80:	07f12a23          	sw	t6,116(sp)
+
+00000084 <ucode_exit>:
+  84:	00012083          	lw	ra,0(sp)
+  88:	00412183          	lw	gp,4(sp)
+  8c:	00812203          	lw	tp,8(sp)
+  90:	00c12283          	lw	t0,12(sp)
+  94:	01012303          	lw	t1,16(sp)
+  98:	01412383          	lw	t2,20(sp)
+  9c:	01812403          	lw	s0,24(sp)
+  a0:	01c12483          	lw	s1,28(sp)
+  a4:	02012503          	lw	a0,32(sp)
+  a8:	02412583          	lw	a1,36(sp)
+  ac:	02812603          	lw	a2,40(sp)
+  b0:	02c12683          	lw	a3,44(sp)
+  b4:	03012703          	lw	a4,48(sp)
+  b8:	03412783          	lw	a5,52(sp)
+  bc:	03812803          	lw	a6,56(sp)
+  c0:	03c12883          	lw	a7,60(sp)
+  c4:	04012903          	lw	s2,64(sp)
+  c8:	04412983          	lw	s3,68(sp)
+  cc:	04812a03          	lw	s4,72(sp)
+  d0:	04c12a83          	lw	s5,76(sp)
+  d4:	05012b03          	lw	s6,80(sp)
+  d8:	05412b83          	lw	s7,84(sp)
+  dc:	05812c03          	lw	s8,88(sp)
+  e0:	05c12c83          	lw	s9,92(sp)
+  e4:	06012d03          	lw	s10,96(sp)
+  e8:	06412d83          	lw	s11,100(sp)
+  ec:	06812e03          	lw	t3,104(sp)
+  f0:	06c12e83          	lw	t4,108(sp)
+  f4:	07012f03          	lw	t5,112(sp)
+  f8:	07412f83          	lw	t6,116(sp)
+  fc:	08010113          	add	sp,sp,128
+ 100:	bc011173          	csrrw	sp,0xbc0,sp
+ 104:	30200073          	mret
